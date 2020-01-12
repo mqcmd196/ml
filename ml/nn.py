@@ -30,15 +30,13 @@ class Layer(object):
                 for key in self.params.keys():
                     self.v[key] = np.zeros(shape=self.params[key].shape, dtype=self.params[key].dtype)
             for key in self.params.keys():
-                print(self.params[key].shape)
-                print(self.grads[key].shape)
                 self.v[key] = self.momentum_alpha * self.v[key] - self.lr * self.grads[key]
                 # weight_decay_rateによってパラメータの更新を抑えている
                 self.params[key] = (1 - self.lr * self.weight_decay_rate) * self.params[key] + self.v[key] 
         
         elif self.optimizer == 'SGD':
             for key in self.params.keys():
-                self.params[key] -= self.lr + self.grads[key]
+                self.params[key] = self.params[key] - (self.lr + self.grads[key])
                 
         elif self.optimizer == 'AdaGrad':
             if self.h == None:
@@ -46,9 +44,9 @@ class Layer(object):
                 for key in self.params.keys():
                     self.h[key] = np.zeros(shape=self.params[key].shape, dtype=self.params[key].dtype)
             for key in self.params.keys():
-                self.h[key] += self.grads[key] * self.grads[key]
+                self.h[key] = self.h[key] + self.grads[key] * self.grads[key]
                 # 1e-7はzero division防止
-                self.params[key] -= self.lr * self.grads[key] / (np.sqrt(self.h[key]) + 1e-7)
+                self.params[key] = self.params[key] - (self.lr * self.grads[key] / (np.sqrt(self.h[key]) + 1e-7))
 
         elif self.optimizer == 'Adam':
             if self.lr > 0.009:
@@ -64,9 +62,9 @@ class Layer(object):
             lr_t = self.lr * np.sqrt(1.0 - self.beta2 ** n_iter) / (1.0 - self.beta1 ** n_iter)
 
             for key in self.params.keys():
-                self.m[key] += (1 - self.beta1) * (self.grads[key] - self.m[key])
-                self.v[key] += (1 - self.beta2) * (self.grads[key]**2 - self.v[key])
-                self.params[key] -= lr_t * self.m[key] / (np.sqrt(self.v[key]) + 1e-7)
+                self.m[key] = self.m[key] + ((1 - self.beta1) * (self.grads[key] - self.m[key]))
+                self.v[key] = self.v[key] + ((1 - self.beta2) * (self.grads[key]**2 - self.v[key]))
+                self.params[key] = self.params[key] - (lr_t * self.m[key] / (np.sqrt(self.v[key]) + 1e-7))
 
     def initgrad(self):
         for key in self.params.keys():
