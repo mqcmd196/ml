@@ -125,8 +125,8 @@ class Sigmoid(Layer):
 
 
 class Sequential:
-    def __init__(self, layers = []):
-        self.layers = layers
+    def __init__(self):
+        self.layers = []
 
     def addlayer(self, layer):
         self.layers.append(layer)
